@@ -1,4 +1,4 @@
-FROM blacklabelops/gcloud
+FROM openjdk:7u121-jdk-alpine
 
 MAINTAINER Lucas Amorim <lucasamorim@protonmail.com>
 EXPOSE 8042
@@ -13,12 +13,20 @@ ENV HOST_PORT 8042
 ENV APP_HOME /pubsub
 WORKDIR $APP_HOME
 
-RUN yum install -y java-1.7.0-openjdk
+RUN apk update
+RUN apk add wget tar python
+
+ENV PATH /opt/google-cloud-sdk/bin:$PATH
+RUN mkdir -p /opt/gcloud && \
+    wget --no-check-certificate --directory-prefix=/tmp/ https://dl.google.com/dl/cloudsdk/release/google-cloud-sdk.zip && \
+    unzip /tmp/google-cloud-sdk.zip -d /opt/ && \
+    /opt/google-cloud-sdk/install.sh --usage-reporting=true --path-update=true --bash-completion=true --rc-path=/opt/gcloud/.bashrc --disable-installation-options && \
+    gcloud components install -q pubsub-emulator beta && \
+    rm -rf /tmp/*
 
 COPY . $APP_HOME
 
-RUN mkdir ${DATA_DIR}
-RUN gcloud components install -q pubsub-emulator beta
+RUN mkdir -p ${DATA_DIR}
 
 ADD start-pubsub $APP_HOME/start-pubsub
 
