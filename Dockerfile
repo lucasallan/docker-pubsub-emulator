@@ -1,6 +1,8 @@
-FROM phusion/baseimage:0.9.18
+FROM blacklabelops/gcloud
 
-MAINTAINER Samuel Cozannet <samuel.cozannet@madeden.com>
+MAINTAINER Lucas Amorim <lucasamorim@protonmail.com>
+EXPOSE 8042
+
 LABEL version="1.0.0"
 LABEL app="pubsub-emulator"
 
@@ -8,25 +10,19 @@ ENV CLOUDSDK_CORE_DISABLE_PROMPTS 1
 ENV DATA_DIR "/data"
 ENV HOST_PORT 8042
 
-RUN apt-get update && \
-	apt-get install -yqq curl \
-		python \
-		openjdk-7-jre && \
-	apt-get clean && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/* 
+ENV APP_HOME /pubsub
+WORKDIR $APP_HOME
 
-RUN \
-	curl https://sdk.cloud.google.com | bash && \
- 	cat /root/google-cloud-sdk/path.bash.inc | bash && \
- 	cat /root/google-cloud-sdk/completion.bash.inc | bash && \
- 	/root/google-cloud-sdk/bin/gcloud components install -q pubsub-emulator beta
+RUN yum install -y java-1.7.0-openjdk
+
+COPY . $APP_HOME
 
 RUN mkdir ${DATA_DIR}
+RUN gcloud components install -q pubsub-emulator beta
 
-ADD start-pubsub /etc/my_init.d/00_start-pubsub
+ADD start-pubsub $APP_HOME/start-pubsub
 
-RUN chmod +x /etc/my_init.d/00_start-pubsub
+RUN chmod +x $APP_HOME/start-pubsub
 
-CMD ["/sbin/my_init"]
-
-EXPOSE 8042
+CMD ["/pubsub/start-pubsub"]
 
