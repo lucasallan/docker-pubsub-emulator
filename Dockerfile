@@ -1,4 +1,4 @@
-FROM blacklabelops/gcloud
+FROM lucasamorim/gcloud
 
 MAINTAINER Lucas Amorim <lucasamorim@protonmail.com>
 EXPOSE 8042
@@ -12,8 +12,6 @@ ENV HOST_PORT 8042
 
 ENV APP_HOME /pubsub
 WORKDIR $APP_HOME
-
-RUN yum install -y java-1.7.0-openjdk
 
 COPY . $APP_HOME
 
